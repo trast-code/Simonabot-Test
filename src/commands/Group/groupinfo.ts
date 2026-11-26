@@ -13,7 +13,7 @@ export default defineCommand({
 	start: async (client, m, { metadata, participants, groupAdmins, settings }) => {
 		if (!metadata) return m.reply("Couldn't load this group's info")
 		const owner = metadata.ownerPn ?? metadata.owner
-		const created = metadata.creation ? moment(metadata.creation * 1000).tz('Asia/Kolkata').format('DD/MM/YYYY HH:mm:ss') : 'Unknown'
+		const created = metadata.creation ? moment(metadata.creation * 1000).tz('Europe/Berlin').format('DD/MM/YYYY HH:mm:ss') : 'Unknown'
 		const caption =
 			`*━━━━『🍀Group-Info🍀』━━━━*\n\n*🎐 Name:* ${metadata.subject}\n\n*🔩 Group ID:* ${m.from}\n\n*🍀 Created:* ${created}\n\n` +
 			`*🥇 Group Owner:* ${owner ? `@${userPart(owner)}` : 'Unknown'}\n\n*🔍 Admins:* ${groupAdmins.length}\n\n` +
