@@ -32,9 +32,12 @@ export const Setting = model('Setting', settingSchema)
 const aiUsageSchema = new Schema({
 	userId: { type: String, required: true },
 	day: { type: String, required: true },
-	count: { type: Number, default: 0 }
+	count: { type: Number, default: 0 },
+	createdAt: { type: Date, default: () => new Date() }
 })
 aiUsageSchema.index({ userId: 1, day: 1 }, { unique: true })
+// Keep aggregate quota records for 90 days, then let MongoDB remove them automatically.
+aiUsageSchema.index({ createdAt: 1 }, { expireAfterSeconds: 90 * 24 * 60 * 60 })
 export const AiUsage = model('SimbaKIUsage', aiUsageSchema)
 
 /** Birthday dates only; no birth year or age is stored. */
