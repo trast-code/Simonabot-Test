@@ -14,7 +14,7 @@ export default defineCommand({
 		const userId = canonicalId(m.senderPn, m.sender)
 		const value = ctx.text.trim().toLowerCase()
 		if (['löschen', 'loeschen', 'delete', 'clear'].includes(value)) {
-			const result = await Birthday.deleteOne({ userId })
+			const result = await Birthday.deleteOne({ groupId: m.from, userId })
 			return m.reply(result.deletedCount ? 'Dein Geburtstag wurde gelöscht.' : 'Für dich ist kein Geburtstag gespeichert.')
 		}
 
@@ -26,8 +26,8 @@ export default defineCommand({
 		if (day > daysInMonth) return m.reply('Dieses Datum gibt es nicht. Bitte prüfe Tag und Monat.')
 
 		await Birthday.findOneAndUpdate(
-			{ userId },
-			{ $set: { userId, name: m.pushName || 'Unbekannt', day, month } },
+			{ groupId: m.from, userId },
+			{ $set: { groupId: m.from, userId, name: m.pushName || 'Unbekannt', day, month } },
 			{ upsert: true, new: true, setDefaultsOnInsert: true }
 		)
 		return m.reply('🎂 Dein Geburtstag ist jetzt für den ' + String(day).padStart(2, '0') + '.' + String(month).padStart(2, '0') + ' gespeichert. Du kannst ihn jederzeit ändern.')
