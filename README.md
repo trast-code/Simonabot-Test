@@ -86,7 +86,7 @@ All settings are environment variables (see [`.env.example`](.env.example)).
 | --- | --- | --- |
 | `MONGODB` | ✅ | MongoDB connection string |
 | `MODS` | ✅ | Owner numbers with country code, comma separated (e.g. `919876543210,447700900123`) |
-| `PREFIX` | | Command prefix (default `.`) |
+| `PREFIX` | | Command prefix (default `!`) |
 | `SESSION_ID` | ✅ | Unique random secret of at least 32 characters. Also the password for `/qr` (HTTP Basic Auth, username `qr`). Generate with `openssl rand -hex 32`. No default is provided. |
 | `PAIRING_NUMBER` | | Link with a pairing code instead of a QR code |
 | `PORT` | | Web server port (default `8080`) |\n| `TRUST_PROXY_HOPS` | | Exact number of trusted reverse-proxy hops (default `0`; configure only behind a trusted proxy) |\n| `QR_REQUIRE_HTTPS` | | Require HTTPS for `/qr` (default `true`; do not disable in production) |
@@ -135,7 +135,7 @@ Run **one** instance per session. Two copies using the same `SESSION_ID` keep ki
 
 ## 📜 Commands
 
-Default prefix is `.`. Use `.help <command>` or `.<command> --info` for details.
+Default prefix is `!`. Use `.help <command>` or `.<command> --info` for details.
 
 | Category | Commands |
 | --- | --- |
