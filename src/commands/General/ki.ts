@@ -94,8 +94,9 @@ export default defineCommand({
 		const allowed = await reserveDailyRequest(userId, day)
 		if (!allowed) return m.reply('⏳ Dein Limit von 10 SimbaKI-Anfragen für heute ist erreicht. Morgen geht es weiter.')
 
+		let answer: string
 		try {
-			const response = await fetch(`${config.aiBaseUrl.replace(/\/+$/, '')}/chat/completions`, {
+			const response = await fetch(`${config.aiBaseUrl.replace(/\\/+$/, '')}/chat/completions`, {
 				method: 'POST',
 				headers: {
 					Authorization: `Bearer ${config.aiApiKey}`,
@@ -111,22 +112,33 @@ export default defineCommand({
 			})
 			if (!response.ok) throw new Error(`KI-Anbieter antwortet mit HTTP ${response.status}`)
 			const data = (await response.json()) as { choices?: Array<{ message?: { content?: string | null } }> }
-			const answer = data.choices?.[0]?.message?.content?.trim()
+			answer = data.choices?.[0]?.message?.content?.trim() ?? ''
 			if (!answer) throw new Error('Der KI-Anbieter hat keine Antwort geliefert.')
-
-			session.messages.push({ role: 'user', content: prompt }, { role: 'assistant', content: answer })
-			session.messages = session.messages.slice(-MAX_HISTORY_MESSAGES)
-			session.updatedAt = Date.now()
-			sessions.set(sessionKey, session)
-			await m.reply(answer)
 		} catch (error) {
 			try {
 				await AiUsage.updateOne({ userId, day, count: { $gt: 0 } }, { $inc: { count: -1 } })
 			} catch (refundError) {
 				console.error('[simbaki] Could not refund failed request:', refundError)
 			}
-			console.error('[simbaki] Request failed:', error)
-			await m.reply('⚠️ SimbaKI konnte gerade nicht antworten. Deine Anfrage wurde nicht vom Tageslimit abgezogen.')
+			console.error('[simbaki] Provider request failed:', error)
+			return m.reply('⚠️ SimbaKI konnte gerade nicht antworten. Deine Anfrage wurde nicht vom Tageslimit abgezogen.')
 		}
+
+		try {
+			await m.reply(answer)
+		} catch (error) {
+			try {
+				await AiUsage.updateOne({ userId, day, count: { $gt: 0 } }, { $inc: { count: -1 } })
+			} catch (refundError) {
+				console.error('[simbaki] Could not refund undelivered request:', refundError)
+			}
+			console.error('[simbaki] Could not deliver reply:', error)
+			return
+		}
+
+		session.messages.push({ role: 'user', content: prompt }, { role: 'assistant', content: answer })
+		session.messages = session.messages.slice(-MAX_HISTORY_MESSAGES)
+		session.updatedAt = Date.now()
+		sessions.set(sessionKey, session)
 	}
 })
