@@ -12,7 +12,7 @@ import { errorMessage, userPart } from '../lib/utils.js'
 import type { Client, CommandContext, Message } from '../types.js'
 
 const INVALID_COMMAND_IMAGE = 'https://i.ibb.co/c33ZHCx/wallpaperflare-com-wallpaper.jpg'
-const INVITE_LINK = /(chat\.whatsapp\.com\/|api\.whatsapp\.com\/|wa\.me\/[^\s]*\?text)/i
+const INVITE_LINK = /(?:https?:\/\/)?chat\.whatsapp\.com\/[A-Za-z0-9]+/i
 
 /** sender -> command name -> last use */
 const cooldowns = new Map<string, Map<string, number>>()
