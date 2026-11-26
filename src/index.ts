@@ -25,6 +25,10 @@ if (!config.mongodb) {
 	console.error(chalk.red('MONGODB is not set. Add your MongoDB connection string to .env (see .env.example).'))
 	process.exit(1)
 }
+if (config.sessionId.length < 32) {
+	console.error(chalk.red('SESSION_ID must be a unique random secret of at least 32 characters. Generate one with: openssl rand -hex 32'))
+	process.exit(1)
+}
 if (!config.owners.length) {
 	console.warn(chalk.yellow('MODS is empty: nobody can use owner commands. Add your number to .env.'))
 }

@@ -23,8 +23,13 @@ export const config = {
 	owners,
 	mongodb: env('MONGODB'),
 	prefix: env('PREFIX') ?? '.',
-	sessionId: env('SESSION_ID') ?? 'NEZUKO',
+	// No public default: startup validation requires a unique random value.
+	sessionId: env('SESSION_ID') ?? '',
 	port: int('PORT', 8080),
+	// Set to the exact number of trusted reverse-proxy hops; leave 0 when directly exposed.
+	trustProxyHops: int('TRUST_PROXY_HOPS', 0),
+	// QR access requires HTTPS by default. Only disable for isolated local development/tests.
+	qrRequireHttps: env('QR_REQUIRE_HTTPS') !== 'false',
 	logLevel: env('LOG_LEVEL') ?? 'silent',
 
 	/** If set, link with an 8-digit pairing code instead of a QR code. */

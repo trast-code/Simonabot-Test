@@ -54,7 +54,7 @@ cp .env.example .env   # then fill in MONGODB and MODS
 bun start
 ```
 
-A QR code appears in the terminal. In WhatsApp, open **Settings → Linked devices → Link a device** and scan it. It is also served at `http://localhost:8080/qr?session=<SESSION_ID>`.
+A QR code appears in the terminal. In WhatsApp, open **Settings → Linked devices → Link a device** and scan it. It is also served at `http://localhost:8080/qr`. The browser asks for HTTP Basic credentials: username `qr`, password your private `SESSION_ID`. The QR endpoint requires HTTPS by default. If TLS terminates at a trusted reverse proxy, set `TRUST_PROXY_HOPS` to its exact hop count (usually `1`); the proxy must overwrite `X-Forwarded-Proto`, and the app port must not be exposed directly. Do not disable `QR_REQUIRE_HTTPS` in production. Failed-login tracking is bounded to 10,000 IP entries and expires after 15 minutes; when using a reverse proxy, also enable rate limiting at the proxy.
 
 **Prefer a pairing code?** Set `PAIRING_NUMBER` to the bot's number (digits only, with country code). The bot prints an 8-digit code; enter it under **Linked devices → Link with phone number instead**.
 
@@ -87,9 +87,9 @@ All settings are environment variables (see [`.env.example`](.env.example)).
 | `MONGODB` | ✅ | MongoDB connection string |
 | `MODS` | ✅ | Owner numbers with country code, comma separated (e.g. `919876543210,447700900123`) |
 | `PREFIX` | | Command prefix (default `.`) |
-| `SESSION_ID` | | Session name (default `NEZUKO`), also the password for the `/qr` page |
+| `SESSION_ID` | ✅ | Unique random secret of at least 32 characters. Also the password for `/qr` (HTTP Basic Auth, username `qr`). Generate with `openssl rand -hex 32`. No default is provided. |
 | `PAIRING_NUMBER` | | Link with a pairing code instead of a QR code |
-| `PORT` | | Web server port (default `8080`) |
+| `PORT` | | Web server port (default `8080`) |\n| `TRUST_PROXY_HOPS` | | Exact number of trusted reverse-proxy hops (default `0`; configure only behind a trusted proxy) |\n| `QR_REQUIRE_HTTPS` | | Require HTTPS for `/qr` (default `true`; do not disable in production) |
 | `GOOGLE_API`, `GOOGLE_CX` | | Google Custom Search for `google` |
 | `WEATHER_API` | | [weatherapi.com](https://www.weatherapi.com) key for `weather` |
 | `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET` | | Full track details for `spotify` (works without them, with fewer details) |
