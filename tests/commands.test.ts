@@ -4,7 +4,7 @@ import { loadCommands } from '../src/core/commands.ts'
 test('all commands load with unique names and aliases', async () => {
 	const warn = spyOn(console, 'warn')
 	const registry = await loadCommands()
-	expect(registry.size).toBe(63)
+	expect(registry.size).toBe(64)
 	expect(warn).not.toHaveBeenCalled()
 
 	for (const cmd of registry.all()) {
