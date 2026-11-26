@@ -23,7 +23,8 @@ export const config = {
 	owners,
 	mongodb: env('MONGODB'),
 	prefix: env('PREFIX') ?? '.',
-	sessionId: env('SESSION_ID') ?? 'NEZUKO',
+	// No public default: startup validation requires a unique random value.
+	sessionId: env('SESSION_ID') ?? '',
 	port: int('PORT', 8080),
 	logLevel: env('LOG_LEVEL') ?? 'silent',
 
