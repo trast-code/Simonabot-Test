@@ -50,7 +50,7 @@ export default defineCommand({
 		for (const [category, list] of commands.byCategory()) {
 			text += `*${category.toUpperCase()} ${EMOJI[category] ?? '✨'} :-*\n\`\`\`${list.map(c => c.name).join(', ')}\`\`\`\n\n`
 		}
-		text += `📗 Type *${prefix}help* <command> or <command> --info\n\n*©Eternity-Team*`
+		text += `📗 Nutze *${prefix}help* <Befehl> oder *<Befehl> --info\n\n*SimonaBot · basiert auf Nezuko*`
 		await m.reply({ image: { url: pickRandom(BANNERS) }, caption: text })
 	}
 })
