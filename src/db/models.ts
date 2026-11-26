@@ -28,6 +28,15 @@ const settingSchema = new Schema({
 })
 export const Setting = model('Setting', settingSchema)
 
+/** Daily SimbaKI request totals only; conversation text is never persisted. */
+const aiUsageSchema = new Schema({
+	userId: { type: String, required: true },
+	day: { type: String, required: true },
+	count: { type: Number, default: 0 }
+})
+aiUsageSchema.index({ userId: 1, day: 1 }, { unique: true })
+export const AiUsage = model('SimbaKIUsage', aiUsageSchema)
+
 /** The session collection used by the old v6 auth store, read once for migration. */
 const legacySessionSchema = new Schema({
 	sessionId: { type: String, required: true, unique: true },
