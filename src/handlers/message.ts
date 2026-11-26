@@ -88,7 +88,7 @@ const handle = async (client: Client, m: Message, commands: CommandRegistry) => 
 	if (!name) return
 	const cmd = commands.get(name)
 	const text = args.join(' ')
-	log(m, body, metadata?.subject ?? '')
+	log(m, ['ki', 'simba', 'simbaki'].includes(name) ? `${prefix}${name} [KI-Inhalt ausgeblendet]` : body, metadata?.subject ?? '')
 
 	if (!cmd) {
 		return void m.reply({
