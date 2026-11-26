@@ -43,10 +43,10 @@ export default defineCommand({
 			if (cmd.cool) info.push(`*⏱️ Cooldown :* ${cmd.cool}s`)
 			if (cmd.desc) info.push(`*🧾 Description :* ${cmd.desc}`)
 			if (cmd.usage) info.push(`*💡 Example :* ${cmd.usage.replace(/%prefix/gi, prefix).replace(/%command/gi, cmd.name)}`)
-			return m.reply(`*ℹ️ Command Info*\n\n${info.join('\n')}\n\n*©Eternity-Team*`)
+			return m.reply(`*ℹ️ Command Info*\n\n${info.join('\n')}\n\n*SimonaBot · basiert auf Nezuko*`)
 		}
 
-		let text = `*Kon'nichiwa (｡♡‿♡｡)* ${m.pushName || 'there'}, Watashiwa *Nezuko*.\n\n🧧 *Prefix :* [ ${prefix} ]\n\n📝 Here are the *Commands* :\n\n`
+		let text = `Hey ${m.pushName || 'du'}! Ich bin *SimonaBot*.\n\n🧧 *Prefix:* [ ${prefix} ]\n\n📝 *Meine Befehle:*\n\n`
 		for (const [category, list] of commands.byCategory()) {
 			text += `*${category.toUpperCase()} ${EMOJI[category] ?? '✨'} :-*\n\`\`\`${list.map(c => c.name).join(', ')}\`\`\`\n\n`
 		}
