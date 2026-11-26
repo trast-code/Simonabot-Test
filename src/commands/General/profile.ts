@@ -7,7 +7,7 @@ import { defineCommand } from '../../types.js'
 export default defineCommand({
 	name: 'profile',
 	alias: ['p'],
-	desc: 'Shows your profile (mods can view others by tagging them)',
+	desc: 'Shows your profile (the owner can view others by tagging them)',
 	usage: '%prefix%command [@user]',
 	category: 'General',
 	react: '✅',
