@@ -10,6 +10,6 @@ export default defineCommand({
 	groupOnly: true,
 	cool: 5,
 	start: async (_client, m) => {
-		await m.reply('📩 *Du brauchst Hilfe?* Schreib mir bitte direkt privat. Öffne dazu meinen WhatsApp-Chat und sende mir deine Nachricht. Ich antworte dir dort.')
+		await m.reply('📩 *Du brauchst Hilfe?* Schreib mir bitte direkt privat. Öffne dazu meinen WhatsApp-Chat und sende mir dort deine Nachricht.')
 	}
 })
