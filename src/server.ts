@@ -1,3 +1,4 @@
+import { createHash, timingSafeEqual } from 'node:crypto'
 import express from 'express'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -6,24 +7,69 @@ import { config } from './config.js'
 import { connectionState } from './core/socket.js'
 
 const publicDir = join(fileURLToPath(import.meta.url), '..', '..', 'public')
+const failedAttempts = new Map<string, { count: number; resetAt: number }>()
+const WINDOW_MS = 15 * 60_000
+const MAX_ATTEMPTS = 5
 
-/** Small web server: landing page, QR code at /qr?session=SESSION_ID, and /health for uptime checks. */
+const matchesSecret = (candidate: string, expected: string): boolean => {
+	const candidateHash = createHash('sha256').update(candidate).digest()
+	const expectedHash = createHash('sha256').update(expected).digest()
+	return timingSafeEqual(candidateHash, expectedHash)
+}
+
 export const startServer = () => {
 	const app = express()
+	app.disable('x-powered-by')
 	app.use('/', express.static(publicDir))
 
 	app.get('/health', (_req, res) => {
+		res.setHeader('Cache-Control', 'no-store')
 		res.json({ status: connectionState.status })
 	})
 
 	app.get('/qr', async (req, res) => {
-		res.setHeader('Content-Type', 'text/plain')
-		if (!req.query.session) return void res.status(400).send('Provide the session id for authentication')
-		if (req.query.session !== config.sessionId) return void res.status(403).send('Invalid session')
+		res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private')
+		res.setHeader('Pragma', 'no-cache')
+		res.setHeader('Referrer-Policy', 'no-referrer')
+		res.setHeader('X-Content-Type-Options', 'nosniff')
+		res.setHeader('X-Frame-Options', 'DENY')
+
+		const ip = req.ip || req.socket.remoteAddress || 'unknown'
+		const now = Date.now()
+		const attempts = failedAttempts.get(ip)
+		if (attempts && attempts.resetAt <= now) failedAttempts.delete(ip)
+		const current = failedAttempts.get(ip)
+		if (current && current.count >= MAX_ATTEMPTS) {
+			res.setHeader('Retry-After', String(Math.ceil((current.resetAt - now) / 1000)))
+			return void res.status(429).send('Too many failed authentication attempts. Try again later.')
+		}
+
+		const header = req.headers.authorization ?? ''
+		const match = /^Basic\s+(.+)$/i.exec(header)
+		let password = ''
+		if (match) {
+			try {
+				const decoded = Buffer.from(match[1], 'base64').toString('utf8')
+				const separator = decoded.indexOf(':')
+				if (separator >= 0 && decoded.slice(0, separator) === 'qr') password = decoded.slice(separator + 1)
+			} catch {
+				// Invalid credentials are handled by the normal authentication failure below.
+			}
+		}
+
+		if (!password || !matchesSecret(password, config.sessionId)) {
+			const next = current ?? { count: 0, resetAt: now + WINDOW_MS }
+			next.count++
+			failedAttempts.set(ip, next)
+			res.setHeader('WWW-Authenticate', 'Basic realm="SimonaBot QR", charset="UTF-8"')
+			return void res.status(401).send('Authentication required')
+		}
+
+		failedAttempts.delete(ip)
 		if (connectionState.status === 'open') return void res.status(409).send('Session already exists')
-		if (connectionState.pairingCode) return void res.send(`Pairing code: ${connectionState.pairingCode}`)
+		if (connectionState.pairingCode) return void res.type('text/plain').send(`Pairing code: ${connectionState.pairingCode}`)
 		if (!connectionState.qr) return void res.status(503).send('QR code not ready yet, refresh in a few seconds')
-		res.setHeader('Content-Type', 'image/png')
+		res.type('png')
 		res.send(await qrcode.toBuffer(connectionState.qr, { width: 360 }))
 	})
 
