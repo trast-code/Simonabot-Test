@@ -45,7 +45,7 @@ export const createServer = (sessionSecret = config.sessionId) => {
 		}
 
 		const header = req.headers.authorization ?? ''
-		const match = /^Basic\\s+(.+)$/i.exec(header)
+		const match = /^Basic\s+(.+)$/i.exec(header)
 		let password = ''
 		if (match) {
 			const decoded = Buffer.from(match[1], 'base64').toString('utf8')
