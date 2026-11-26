@@ -6,7 +6,7 @@ import { createServer } from '../src/server.js'
 const secret = 'a'.repeat(64)
 
 const withServer = async (run: (baseUrl: string) => Promise<void>) => {
-	const server = createServer(secret).listen(0, '127.0.0.1')
+	const server = createServer(secret, { requireHttps: false }).listen(0, '127.0.0.1')
 	await once(server, 'listening')
 	const address = server.address() as AddressInfo
 	try {
@@ -69,4 +69,37 @@ test('QR endpoint rate-limits the sixth failed authentication attempt', async ()
 		expect(blocked.status).toBe(429)
 		expect(Number(blocked.headers.get('retry-after'))).toBeGreaterThan(0)
 	})
+})
+
+test('QR endpoint requires HTTPS unless explicitly disabled for local tests', async () => {
+  const server = createServer(secret).listen(0, '127.0.0.1')
+  await once(server, 'listening')
+  const address = server.address() as AddressInfo
+  try {
+    const response = await fetch(`http://127.0.0.1:${address.port}/qr`)
+    expect(response.status).toBe(403)
+  } finally {
+    await new Promise<void>((resolve, reject) => {
+      server.close(error => (error ? reject(error) : resolve()))
+    })
+  }
+})
+
+test('QR endpoint honours HTTPS from the configured trusted proxy', async () => {
+  const server = createServer(secret, { trustProxyHops: 1 }).listen(0, '127.0.0.1')
+  await once(server, 'listening')
+  const address = server.address() as AddressInfo
+  try {
+    const response = await fetch(`http://127.0.0.1:${address.port}/qr`, {
+      headers: {
+        'X-Forwarded-Proto': 'https',
+        Authorization: basic('qr', secret)
+      }
+    })
+    expect(response.status).toBe(503)
+  } finally {
+    await new Promise<void>((resolve, reject) => {
+      server.close(error => (error ? reject(error) : resolve()))
+    })
+  }
 })
