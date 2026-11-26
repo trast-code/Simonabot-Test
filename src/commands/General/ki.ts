@@ -12,6 +12,7 @@ const DAILY_LIMIT = 10
 const SESSION_TTL = 30 * 60 * 1000
 const MAX_HISTORY_MESSAGES = 10
 const MAX_PROMPT_LENGTH = 4000
+const MAX_SESSIONS = 5000
 
 /** Calendar day in Germany, so the quota resets at local midnight. */
 export const getSimonaBotDay = (date: Date = new Date()): string => {
@@ -79,6 +80,13 @@ export default defineCommand({
 		for (const [key, value] of sessions) {
 			if (now - value.updatedAt > SESSION_TTL) sessions.delete(key)
 		}
+		if (!sessions.has(sessionKey) && sessions.size >= MAX_SESSIONS) {
+			const oldest = [...sessions.entries()].reduce<string | undefined>(
+				(oldestKey, [key, value]) => !oldestKey || value.updatedAt < sessions.get(oldestKey)!.updatedAt ? key : oldestKey,
+				undefined
+			)
+			if (oldest) sessions.delete(oldest)
+		}
 		let session = sessions.get(sessionKey)
 		if (!session || now - session.updatedAt > SESSION_TTL) session = { messages: [], updatedAt: now }
 
@@ -112,7 +120,11 @@ export default defineCommand({
 			sessions.set(sessionKey, session)
 			await m.reply(answer)
 		} catch (error) {
-			await AiUsage.updateOne({ userId, day }, { $inc: { count: -1 } })
+			try {
+				await AiUsage.updateOne({ userId, day, count: { $gt: 0 } }, { $inc: { count: -1 } })
+			} catch (refundError) {
+				console.error('[simbaki] Could not refund failed request:', refundError)
+			}
 			console.error('[simbaki] Request failed:', error)
 			await m.reply('⚠️ SimbaKI konnte gerade nicht antworten. Deine Anfrage wurde nicht vom Tageslimit abgezogen.')
 		}
