@@ -37,6 +37,16 @@ const aiUsageSchema = new Schema({
 aiUsageSchema.index({ userId: 1, day: 1 }, { unique: true })
 export const AiUsage = model('SimbaKIUsage', aiUsageSchema)
 
+/** Birthday dates only; no birth year or age is stored. */
+const birthdaySchema = new Schema({
+	userId: { type: String, required: true, unique: true },
+	name: { type: String, required: true },
+	day: { type: Number, required: true, min: 1, max: 31 },
+	month: { type: Number, required: true, min: 1, max: 12 }
+})
+birthdaySchema.index({ month: 1, day: 1 })
+export const Birthday = model('Birthday', birthdaySchema)
+
 /** The session collection used by the old v6 auth store, read once for migration. */
 const legacySessionSchema = new Schema({
 	sessionId: { type: String, required: true, unique: true },
