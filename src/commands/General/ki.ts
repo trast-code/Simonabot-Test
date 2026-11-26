@@ -96,7 +96,7 @@ export default defineCommand({
 
 		let answer: string
 		try {
-			const response = await fetch(`${config.aiBaseUrl.replace(/\\/+$/, '')}/chat/completions`, {
+			const response = await fetch(`${config.aiBaseUrl.replace(/\/+$/, '')}/chat/completions`, {
 				method: 'POST',
 				headers: {
 					Authorization: `Bearer ${config.aiApiKey}`,
