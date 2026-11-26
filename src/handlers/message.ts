@@ -92,7 +92,7 @@ const handle = async (client: Client, m: Message, commands: CommandRegistry) => 
 		if (m.isGroup) await handleIntroductionReply(client, m, prefix)
 		return
 	}
-	const [rawName = '', ...args] = body.slice(prefix.length).trim().split(/\\s+/)
+	const [rawName = '', ...args] = body.slice(prefix.length).trim().split(/\s+/)
 	const name = rawName.toLowerCase()
 	if (!name) return
 	const cmd = commands.get(name)
@@ -102,7 +102,7 @@ const handle = async (client: Client, m: Message, commands: CommandRegistry) => 
 	if (!cmd) {
 		return void m.reply({
 			image: { url: INVALID_COMMAND_IMAGE },
-			caption: `*${prefix}${name}* is an ⛔ invalid command\\nuse *${prefix}help* to see the help menu`
+			caption: `*${prefix}${name}* is an ⛔ invalid command\nuse *${prefix}help* to see the help menu`
 		})
 	}
 
@@ -111,10 +111,10 @@ const handle = async (client: Client, m: Message, commands: CommandRegistry) => 
 		if (cmd.alias?.length) info.push(`*Alias :* ${cmd.alias.join(', ')}`)
 		if (cmd.desc) info.push(`*Description :* ${cmd.desc}`)
 		if (cmd.usage) info.push(`*Example :* ${cmd.usage.replace(/%prefix/gi, prefix).replace(/%command/gi, cmd.name)}`)
-		return void m.reply(`*ℹ️ Command Info*\\n\\n${info.join('\\n')}`)
+		return void m.reply(`*ℹ️ Command Info*\n\n${info.join('\n')}`)
 	}
 
-	if (!m.isGroup && !owner) return void m.reply('*You can\\'t use commands in DM*')
+	if (!m.isGroup && !owner) return void m.reply('*You can\'t use commands in DM*')
 	const userId = canonicalId(m.senderPn, m.sender)
 	if (await settings.has('ban', userId)) return void m.reply('You are banned from using commands ❌')
 
