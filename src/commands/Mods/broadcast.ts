@@ -12,7 +12,7 @@ export default defineCommand({
 	start: async (client, m, { text, target, mime }) => {
 		if (!text) return m.reply('❌ No message provided!')
 		const groups = Object.keys(await client.groupFetchAllParticipating())
-		const caption = `🔰 _*Nezuko Broadcast*_ 🔰\n\n🍀 *Author:* ${m.pushName}\n\n💬 *Message:* ${text}`
+		const caption = `🔰 _*SimonaBot Broadcast*_ 🔰\n\n🍀 *Author:* ${m.pushName}\n\n💬 *Message:* ${text}`
 		const media = /image|video/.test(mime) ? await target.download() : undefined
 
 		// Sending fast to many chats is a common ban trigger, so space messages out.
