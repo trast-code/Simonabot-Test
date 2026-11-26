@@ -68,6 +68,7 @@ export default defineCommand({
 		const userId = canonicalId(m.senderPn, m.sender)
 		const sessionKey = `${m.from}:${userId}`
 		if (['reset', 'zurücksetzen', 'loeschen', 'löschen'].includes(ctx.text.trim().toLowerCase())) {
+			if (activeSessions.has(sessionKey)) return m.reply('⌛ Deine SimbaKI-Anfrage läuft noch. Setze den Verlauf zurück, sobald die Antwort abgeschlossen ist.')
 			sessions.delete(sessionKey)
 			return m.reply('🧠 Dein aktueller SimbaKI-Gesprächsverlauf wurde gelöscht.')
 		}
