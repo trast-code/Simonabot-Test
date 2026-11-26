@@ -8,6 +8,7 @@ import { sentByBot } from '../core/socket.js'
 import { levels } from '../db/levels.js'
 import { User } from '../db/models.js'
 import { settings } from '../db/settings.js'
+import { handleIntroductionReply } from '../core/introduction.js'
 import { errorMessage, userPart } from '../lib/utils.js'
 import type { Client, CommandContext, Message } from '../types.js'
 
@@ -82,7 +83,10 @@ const handle = async (client: Client, m: Message, commands: CommandRegistry) => 
 		if (isBotAdmin) return void (await deleteAndKick(client, m).catch(() => {}))
 	}
 
-	if (!body.startsWith(prefix)) return
+	if (!body.startsWith(prefix)) {
+		if (m.isGroup) await handleIntroductionReply(client, m, prefix)
+		return
+	}
 	const [rawName = '', ...args] = body.slice(prefix.length).trim().split(/\s+/)
 	const name = rawName.toLowerCase()
 	if (!name) return
