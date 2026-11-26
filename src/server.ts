@@ -7,7 +7,6 @@ import { config } from './config.js'
 import { connectionState } from './core/socket.js'
 
 const publicDir = join(fileURLToPath(import.meta.url), '..', '..', 'public')
-const failedAttempts = new Map<string, { count: number; resetAt: number }>()
 const WINDOW_MS = 15 * 60_000
 const MAX_ATTEMPTS = 5
 
@@ -17,8 +16,9 @@ const matchesSecret = (candidate: string, expected: string): boolean => {
 	return timingSafeEqual(candidateHash, expectedHash)
 }
 
-export const startServer = () => {
+export const createServer = (sessionSecret = config.sessionId) => {
 	const app = express()
+	const failedAttempts = new Map<string, { count: number; resetAt: number }>()
 	app.disable('x-powered-by')
 	app.use('/', express.static(publicDir))
 
@@ -45,19 +45,15 @@ export const startServer = () => {
 		}
 
 		const header = req.headers.authorization ?? ''
-		const match = /^Basic\s+(.+)$/i.exec(header)
+		const match = /^Basic\\s+(.+)$/i.exec(header)
 		let password = ''
 		if (match) {
-			try {
-				const decoded = Buffer.from(match[1], 'base64').toString('utf8')
-				const separator = decoded.indexOf(':')
-				if (separator >= 0 && decoded.slice(0, separator) === 'qr') password = decoded.slice(separator + 1)
-			} catch {
-				// Invalid credentials are handled by the normal authentication failure below.
-			}
+			const decoded = Buffer.from(match[1], 'base64').toString('utf8')
+			const separator = decoded.indexOf(':')
+			if (separator >= 0 && decoded.slice(0, separator) === 'qr') password = decoded.slice(separator + 1)
 		}
 
-		if (!password || !matchesSecret(password, config.sessionId)) {
+		if (!password || !sessionSecret || !matchesSecret(password, sessionSecret)) {
 			const next = current ?? { count: 0, resetAt: now + WINDOW_MS }
 			next.count++
 			failedAttempts.set(ip, next)
@@ -73,5 +69,9 @@ export const startServer = () => {
 		res.send(await qrcode.toBuffer(connectionState.qr, { width: 360 }))
 	})
 
-	app.listen(config.port, () => console.log(`[server] Listening on port ${config.port}`))
+	return app
+}
+
+export const startServer = () => {
+	createServer().listen(config.port, () => console.log(`[server] Listening on port ${config.port}`))
 }
