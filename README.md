@@ -229,3 +229,12 @@ Nezuko is free and open-source software licensed under the [GNU Affero General P
 | <a href="https://github.com/Chey-san"><img src="https://github.com/Chey-san.png?size=100" width="100" height="100"></a>         | [![SaruMan_sama](https://github.com/SarumanSama.png?size=100)](https://github.com/SarumanSama) |
 | [Chey_San](https://github.com/Chey-san)                                                                                         | [SaruMan](https://github.com/SarumanSama)                                                      |
 | Contributor                                                                                                                     | Contributor                                                                                    |
+
+
+## SimbaKI
+
+SimonaBot includes the group command `!ki <message>` (aliases: `!simba`, `!simbaki`). Each member has a limit of 10 requests per UTC day. The count is stored in MongoDB; conversation text is not stored there.
+
+The short conversation context is held only in process memory, separately for each member in each group. It expires after 30 minutes without activity and is lost when the bot restarts. Use `!ki reset` to clear it immediately.
+
+To enable SimbaKI, configure `AI_API_KEY`. The default endpoint is OpenAI-compatible and uses `gpt-4o-mini`; `AI_BASE_URL` and `AI_MODEL` can be changed for another compatible provider. Messages and the recent in-session context are sent to that provider to generate replies. Do not send sensitive personal information unless the provider's data terms are acceptable to the group.
