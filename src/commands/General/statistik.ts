@@ -13,8 +13,8 @@ export default defineCommand({
 		const day = getSimonaBotDay()
 		const month = Number(day.slice(5, 7))
 		const [birthdaysThisMonth, totalBirthdays] = await Promise.all([
-			Birthday.countDocuments({ month }),
-			Birthday.countDocuments({})
+			Birthday.countDocuments({ groupId: m.from, month }),
+			Birthday.countDocuments({ groupId: m.from })
 		])
 		const lines = [
 			'📊 *Statistik für diese Gruppe*',
@@ -33,7 +33,7 @@ export default defineCommand({
 				'*Erweiterte Bot-Statistik (heute, botweit)*',
 				'🧠 SimbaKI-Anfragen: ' + today.requests,
 				'👤 Mitglieder mit SimbaKI-Nutzung: ' + today.users,
-				'🎂 Geburtstage insgesamt eingetragen: ' + totalBirthdays
+				'🎂 Geburtstage in dieser Gruppe insgesamt: ' + totalBirthdays
 			)
 		}
 
