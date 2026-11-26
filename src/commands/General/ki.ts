@@ -8,6 +8,7 @@ type Session = { messages: ChatMessage[]; updatedAt: number }
 
 /** Deliberately memory-only: cleared after 30 minutes idle or a process restart. */
 const sessions = new Map<string, Session>()
+const activeSessions = new Set<string>()
 const DAILY_LIMIT = 10
 const SESSION_TTL = 30 * 60 * 1000
 const MAX_HISTORY_MESSAGES = 10
@@ -76,69 +77,76 @@ export default defineCommand({
 		if (prompt.length > MAX_PROMPT_LENGTH) return m.reply(`Deine Nachricht ist zu lang. Maximal ${MAX_PROMPT_LENGTH} Zeichen.`)
 		if (!config.aiApiKey) return m.reply('🛠️ SimbaKI ist noch nicht eingerichtet. Der Betreiber muss den KI-API-Schlüssel hinterlegen.')
 
-		const now = Date.now()
-		for (const [key, value] of sessions) {
-			if (now - value.updatedAt > SESSION_TTL) sessions.delete(key)
-		}
-		if (!sessions.has(sessionKey) && sessions.size >= MAX_SESSIONS) {
-			const oldest = [...sessions.entries()].reduce<string | undefined>(
-				(oldestKey, [key, value]) => !oldestKey || value.updatedAt < sessions.get(oldestKey)!.updatedAt ? key : oldestKey,
-				undefined
-			)
-			if (oldest) sessions.delete(oldest)
-		}
-		let session = sessions.get(sessionKey)
-		if (!session || now - session.updatedAt > SESSION_TTL) session = { messages: [], updatedAt: now }
-
-		const day = getSimonaBotDay()
-		const allowed = await reserveDailyRequest(userId, day)
-		if (!allowed) return m.reply('⏳ Dein Limit von 10 SimbaKI-Anfragen für heute ist erreicht. Morgen geht es weiter.')
-
-		let answer: string
-		try {
-			const response = await fetch(`${config.aiBaseUrl.replace(/\/+$/, '')}/chat/completions`, {
-				method: 'POST',
-				headers: {
-					Authorization: `Bearer ${config.aiApiKey}`,
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					model: config.aiModel,
-					messages: [{ role: 'system', content: systemPrompt }, ...session.messages, { role: 'user', content: prompt }],
-					temperature: 0.8,
-					max_tokens: 600
-				}),
-				signal: AbortSignal.timeout(45_000)
-			})
-			if (!response.ok) throw new Error(`KI-Anbieter antwortet mit HTTP ${response.status}`)
-			const data = (await response.json()) as { choices?: Array<{ message?: { content?: string | null } }> }
-			answer = data.choices?.[0]?.message?.content?.trim() ?? ''
-			if (!answer) throw new Error('Der KI-Anbieter hat keine Antwort geliefert.')
-		} catch (error) {
-			try {
-				await AiUsage.updateOne({ userId, day, count: { $gt: 0 } }, { $inc: { count: -1 } })
-			} catch (refundError) {
-				console.error('[simbaki] Could not refund failed request:', refundError)
-			}
-			console.error('[simbaki] Provider request failed:', error)
-			return m.reply('⚠️ SimbaKI konnte gerade nicht antworten. Deine Anfrage wurde nicht vom Tageslimit abgezogen.')
-		}
+		if (activeSessions.has(sessionKey)) return m.reply('⌛ Eine SimbaKI-Antwort läuft für dich noch. Warte bitte kurz, bis sie da ist.')
+		activeSessions.add(sessionKey)
 
 		try {
-			await m.reply(answer)
-		} catch (error) {
-			try {
-				await AiUsage.updateOne({ userId, day, count: { $gt: 0 } }, { $inc: { count: -1 } })
-			} catch (refundError) {
-				console.error('[simbaki] Could not refund undelivered request:', refundError)
+			const now = Date.now()
+			for (const [key, value] of sessions) {
+				if (now - value.updatedAt > SESSION_TTL) sessions.delete(key)
 			}
-			console.error('[simbaki] Could not deliver reply:', error)
-			return
+			if (!sessions.has(sessionKey) && sessions.size >= MAX_SESSIONS) {
+				const oldest = [...sessions.entries()].reduce<string | undefined>(
+					(oldestKey, [key, value]) => !oldestKey || value.updatedAt < sessions.get(oldestKey)!.updatedAt ? key : oldestKey,
+					undefined
+				)
+				if (oldest) sessions.delete(oldest)
+			}
+			let session = sessions.get(sessionKey)
+			if (!session || now - session.updatedAt > SESSION_TTL) session = { messages: [], updatedAt: now }
+	
+			const day = getSimonaBotDay()
+			const allowed = await reserveDailyRequest(userId, day)
+			if (!allowed) return m.reply('⏳ Dein Limit von 10 SimbaKI-Anfragen für heute ist erreicht. Morgen geht es weiter.')
+	
+			let answer: string
+			try {
+				const response = await fetch(`${config.aiBaseUrl.replace(/\/+$/, '')}/chat/completions`, {
+					method: 'POST',
+					headers: {
+						Authorization: `Bearer ${config.aiApiKey}`,
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({
+						model: config.aiModel,
+						messages: [{ role: 'system', content: systemPrompt }, ...session.messages, { role: 'user', content: prompt }],
+						temperature: 0.8,
+						max_tokens: 600
+					}),
+					signal: AbortSignal.timeout(45_000)
+				})
+				if (!response.ok) throw new Error(`KI-Anbieter antwortet mit HTTP ${response.status}`)
+				const data = (await response.json()) as { choices?: Array<{ message?: { content?: string | null } }> }
+				answer = data.choices?.[0]?.message?.content?.trim() ?? ''
+				if (!answer) throw new Error('Der KI-Anbieter hat keine Antwort geliefert.')
+			} catch (error) {
+				try {
+					await AiUsage.updateOne({ userId, day, count: { $gt: 0 } }, { $inc: { count: -1 } })
+				} catch (refundError) {
+					console.error('[simbaki] Could not refund failed request:', refundError)
+				}
+				console.error('[simbaki] Provider request failed:', error)
+				return m.reply('⚠️ SimbaKI konnte gerade nicht antworten. Deine Anfrage wurde nicht vom Tageslimit abgezogen.')
+			}
+	
+			try {
+				await m.reply(answer)
+			} catch (error) {
+				try {
+					await AiUsage.updateOne({ userId, day, count: { $gt: 0 } }, { $inc: { count: -1 } })
+				} catch (refundError) {
+					console.error('[simbaki] Could not refund undelivered request:', refundError)
+				}
+				console.error('[simbaki] Could not deliver reply:', error)
+				return
+			}
+	
+			session.messages.push({ role: 'user', content: prompt }, { role: 'assistant', content: answer })
+			session.messages = session.messages.slice(-MAX_HISTORY_MESSAGES)
+			session.updatedAt = Date.now()
+			sessions.set(sessionKey, session)
+		} finally {
+			activeSessions.delete(sessionKey)
 		}
-
-		session.messages.push({ role: 'user', content: prompt }, { role: 'assistant', content: answer })
-		session.messages = session.messages.slice(-MAX_HISTORY_MESSAGES)
-		session.updatedAt = Date.now()
-		sessions.set(sessionKey, session)
 	}
 })
