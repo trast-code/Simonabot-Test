@@ -22,7 +22,7 @@ const owners = (env('MODS') ?? '')
 export const config = {
 	owners,
 	mongodb: env('MONGODB'),
-	prefix: env('PREFIX') ?? '.',
+	prefix: env('PREFIX') ?? '!',
 	// No public default: startup validation requires a unique random value.
 	sessionId: env('SESSION_ID') ?? '',
 	port: int('PORT', 8080),
