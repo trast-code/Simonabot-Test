@@ -139,7 +139,7 @@ Standard-Präfix ist `!`. Mit `!help` wird das vollständige, automatisch erzeug
 | Moderation | `ban`, `broadcast`, `join`, `leave`, `unban` |
 | Medien | `igdl`, `lyrics`, `play`, `playv`, `spotify`, `yta`, `yts`, `ytv` |
 | Werkzeuge | `google`, `reddit`, `shorturl`, `steal`, `sticker`, `toimg`, `weather` |
-| Reaktionen und Bild-Effekte | `reaction` (z. B. `hug`, `pat`, `slap`), `old`, `rainbow`, `rip`, `shit`, `trash`, `trigger`, `wanted`, `wasted` |
+| Reaktionen und Bild-Effekte | `reaction` (z. B. `hug`, `pat`, `slap`), `hitler`, `old`, `rainbow`, `rip`, `shit`, `trash`, `trigger`, `wanted`, `wasted` |
 | Anime und Manga | `anime`, `cosplay`, `couplepp`, `genshin`, `manga`, `neko`, `waifu`, `wallpaper` |
 | Wissen | `calc`, `define`, `element` |
 
