@@ -13,6 +13,18 @@ const SESSION_TTL = 30 * 60 * 1000
 const MAX_HISTORY_MESSAGES = 10
 const MAX_PROMPT_LENGTH = 4000
 
+/** Calendar day in Germany, so the quota resets at local midnight. */
+export const getSimonaBotDay = (date: Date = new Date()): string => {
+	const parts = new Intl.DateTimeFormat('en-CA', {
+		timeZone: 'Europe/Berlin',
+		year: 'numeric',
+		month: '2-digit',
+		day: '2-digit'
+	}).formatToParts(date)
+	const values = Object.fromEntries(parts.map(part => [part.type, part.value]))
+	return `${values.year}-${values.month}-${values.day}`
+}
+
 const systemPrompt = `Du bist SimbaKI, der KI-Assistent von SimonaBot in WhatsApp-Gruppen.
 Deine Persönlichkeit: frech, schlagfertig, intelligent, locker und humorvoll. Du darfst gelegentlich sarkastisch oder leicht provokant sein, aber bleib respektvoll.
 Bei ernsten, persönlichen oder gesundheitlichen Themen reagierst du empathisch, sorgfältig und ohne verletzende Witze.
@@ -64,10 +76,13 @@ export default defineCommand({
 		if (!config.aiApiKey) return m.reply('🛠️ SimbaKI ist noch nicht eingerichtet. Der Betreiber muss den KI-API-Schlüssel hinterlegen.')
 
 		const now = Date.now()
+		for (const [key, value] of sessions) {
+			if (now - value.updatedAt > SESSION_TTL) sessions.delete(key)
+		}
 		let session = sessions.get(sessionKey)
 		if (!session || now - session.updatedAt > SESSION_TTL) session = { messages: [], updatedAt: now }
 
-		const day = new Date().toISOString().slice(0, 10)
+		const day = getSimonaBotDay()
 		const allowed = await reserveDailyRequest(userId, day)
 		if (!allowed) return m.reply('⏳ Dein Limit von 10 SimbaKI-Anfragen für heute ist erreicht. Morgen geht es weiter.')
 
