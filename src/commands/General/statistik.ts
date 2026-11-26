@@ -37,6 +37,6 @@ export default defineCommand({
 			)
 		}
 
-		return m.reply(lines.join('\\n'))
+		return m.reply(lines.join('\n'))
 	}
 })
