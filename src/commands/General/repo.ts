@@ -12,15 +12,13 @@ const IMAGES = [
 
 export default defineCommand({
 	name: 'repo',
-	alias: ['nezuko', 'script'],
-	desc: 'Details of the bot repository',
+	desc: 'Zeigt Informationen zum SimonaBot-Repository',
 	category: 'General',
 	react: '✅',
-	start: async (client, m) => {
-		const repo = await fetchJson('https://api.github.com/repos/EternityBots/Nezuko')
+	start: async (_client, m) => {
+		const repo = await fetchJson('https://api.github.com/repos/trast-code/Simonabot-Test')
 		const caption =
-			`✨ _*🅽︎🅴︎🆉︎🆄︎🅺︎🅾︎*_ ✨\n\n🍀 *Description:* ${repo.description}\n\n📎 *Repo Link:* ${repo.html_url}\n\n` +
-			`🌠 *Total Stars:* ${repo.stargazers_count}\n\n💕 *Total Forks:* ${repo.forks}\n\n💁🏻‍♂️ *Tutorial:* https://www.youtube.com/watch?v=KqgyScOlvV8`
+			`✨ *SimonaBot* ✨\n\n📎 *Repository:* ${repo.html_url}\n\n📝 *Beschreibung:* ${repo.description || 'SimonaBot auf Basis von Nezuko'}\n\n⭐ *Stars:* ${repo.stargazers_count}\n\n🍴 *Forks:* ${repo.forks}`
 		await m.reply({ image: { url: pickRandom(IMAGES) }, caption })
 	}
 })
