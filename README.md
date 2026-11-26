@@ -147,9 +147,9 @@ Standard-Präfix ist `!`. Mit `!help` wird das vollständige, automatisch erzeug
 
 - **Anti-Link:** Entfernt ausschließlich WhatsApp-Gruppeneinladungslinks (`chat.whatsapp.com`). Andere Links werden nicht als Einladungslinks behandelt.
 - **SimbaKI:** `!ki <nachricht>` (auch `!simba` oder `!simbaki`). Maximal 10 Anfragen pro Mitglied und Kalendertag in deutscher Zeit. Der Gesprächsverlauf liegt nur vorübergehend im Arbeitsspeicher, wird nach 30 Minuten Inaktivität gelöscht und geht bei einem Neustart verloren. `!ki reset` löscht ihn sofort.
-- **Geburtstag:** `!geburtstag TT.MM` trägt den eigenen Geburtstag ein oder ändert ihn. `!geburtstag löschen` entfernt den eigenen Eintrag. `!geburtstage` zeigt nur die Geburtstage des aktuellen Monats.
+- **Geburtstag:** `!geburtstag TT.MM` trägt den eigenen Geburtstag ein oder ändert ihn. `!geburtstag löschen` entfernt den eigenen Eintrag. `!geburtstage` zeigt nur die Geburtstage des aktuellen Monats in der jeweiligen Gruppe. Geburtstage werden getrennt pro Gruppe gespeichert.
 - **Vorstellen:** `!vorstellen` startet eine kurze Abfrage. Nach Abschluss wird die Vorstellung in der Gruppe veröffentlicht. Mit `abbrechen` kann der Vorgang beendet werden; unvollständige Eingaben verfallen nach zehn Minuten.
-- **Statistik:** `!statistik` zeigt Gruppenmitglieder und Geburtstage des Monats. Admins und Owner sehen zusätzlich aggregierte, botweite SimbaKI-Tageszahlen und die Gesamtzahl eingetragener Geburtstage.
+- **Statistik:** `!statistik` zeigt Gruppenmitglieder und Geburtstage des Monats. Admins und Owner sehen zusätzlich aggregierte, botweite SimbaKI-Tageszahlen sowie die Gesamtzahl der in dieser Gruppe eingetragenen Geburtstage.
 - **Gruppenverwaltung:** Admin-Befehle wie `!promote`, `!demote`, `!remove`, `!group open` und `!group close` setzen die entsprechenden WhatsApp-Rechte voraus.
 
 Gruppenfunktionen wie Anti-Link und Begrüßungs-/Abschiedsnachrichten werden von Gruppenadmins mit `!enable` bzw. `!disable` verwaltet.\n\n## 🧩 Adding a command
