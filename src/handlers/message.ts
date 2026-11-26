@@ -33,9 +33,14 @@ const rememberName = (m: Message) => {
 	User.updateOne({ id }, { $set: { name: m.pushName } }, { upsert: true }).catch(() => {})
 }
 
+/** Try both moderation actions independently so a delete failure cannot prevent the kick. */
 const deleteAndKick = async (client: Client, m: Message) => {
-	await client.sendMessage(m.from, { delete: m.key })
-	await client.groupParticipantsUpdate(m.from, [m.sender], 'remove')
+	const [deleted, removed] = await Promise.allSettled([
+		client.sendMessage(m.from, { delete: m.key }),
+		client.groupParticipantsUpdate(m.from, [m.sender], 'remove')
+	])
+	if (deleted.status === 'rejected') console.error('[antilink] Could not delete invite message:', deleted.reason)
+	if (removed.status === 'rejected') console.error('[antilink] Could not remove invite-link sender:', removed.reason)
 }
 
 export const createMessageHandler = (commands: CommandRegistry) => async (client: Client, raws: WAMessage[]) => {
@@ -76,18 +81,18 @@ const handle = async (client: Client, m: Message, commands: CommandRegistry) => 
 		isBotAdmin = isAdminParticipant(findParticipant(participants, [client.user?.id, client.user?.lid]))
 	}
 
-	// Anti-link: remove members who post WhatsApp invite links in protected groups.
+	// Only WhatsApp group invite links are moderated. Group admins and the configured bot owner are exempt.
 	if (m.isGroup && antilink && !m.fromMe && INVITE_LINK.test(body)) {
 		if (owner) return void m.reply('*Ohhh you are a mod*')
 		if (isAdmin) return void m.reply('*Ohhh you are an admin*')
-		if (isBotAdmin) return void (await deleteAndKick(client, m).catch(() => {}))
+		if (isBotAdmin) return void deleteAndKick(client, m)
 	}
 
 	if (!body.startsWith(prefix)) {
 		if (m.isGroup) await handleIntroductionReply(client, m, prefix)
 		return
 	}
-	const [rawName = '', ...args] = body.slice(prefix.length).trim().split(/\s+/)
+	const [rawName = '', ...args] = body.slice(prefix.length).trim().split(/\\s+/)
 	const name = rawName.toLowerCase()
 	if (!name) return
 	const cmd = commands.get(name)
@@ -97,7 +102,7 @@ const handle = async (client: Client, m: Message, commands: CommandRegistry) => 
 	if (!cmd) {
 		return void m.reply({
 			image: { url: INVALID_COMMAND_IMAGE },
-			caption: `*${prefix}${name}* is an ⛔ invalid command\nuse *${prefix}help* to see the help menu`
+			caption: `*${prefix}${name}* is an ⛔ invalid command\\nuse *${prefix}help* to see the help menu`
 		})
 	}
 
@@ -106,10 +111,10 @@ const handle = async (client: Client, m: Message, commands: CommandRegistry) => 
 		if (cmd.alias?.length) info.push(`*Alias :* ${cmd.alias.join(', ')}`)
 		if (cmd.desc) info.push(`*Description :* ${cmd.desc}`)
 		if (cmd.usage) info.push(`*Example :* ${cmd.usage.replace(/%prefix/gi, prefix).replace(/%command/gi, cmd.name)}`)
-		return void m.reply(`*ℹ️ Command Info*\n\n${info.join('\n')}`)
+		return void m.reply(`*ℹ️ Command Info*\\n\\n${info.join('\\n')}`)
 	}
 
-	if (!m.isGroup && !owner) return void m.reply('*You can\'t use commands in DM*')
+	if (!m.isGroup && !owner) return void m.reply('*You can\\'t use commands in DM*')
 	const userId = canonicalId(m.senderPn, m.sender)
 	if (await settings.has('ban', userId)) return void m.reply('You are banned from using commands ❌')
 
