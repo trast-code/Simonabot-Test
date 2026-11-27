@@ -13,8 +13,8 @@ export default defineCommand({
 		if (!m.quoted || !/webp/.test(m.quoted.mimetype)) return m.reply('❌ Reply to a sticker')
 		const [pack, author] = text.split('|').map(s => s.trim())
 		const sticker = await addStickerExif(await m.quoted.download(), {
-			pack: pack || 'ETERNITY',
-			author: author || 'THE BEST IS YET TO BE'
+			pack: pack || 'SimonaBot',
+			author: author || 'SimonaBot'
 		})
 		await m.reply({ sticker })
 	}
