@@ -136,7 +136,7 @@ Standard-Präfix ist `!`. Mit `!help` wird das vollständige, automatisch erzeug
 | --- | --- |
 | Allgemein | `help`, `hi`, `mods`, `profile`, `rank`, `repo`, `ki`, `geburtstag`, `geburtstage`, `vorstellen`, `statistik` |
 | Gruppe | `delete`, `demote`, `disable`, `enable`, `group`, `groupinfo`, `ping`, `promote`, `remove`, `setppgc`, `support` |
-| Moderation | `ban`, `broadcast`, `join`, `leave`, `unban` |
+| Moderation | `ban`, `join`, `leave`, `unban` |
 | Medien | `igdl`, `lyrics`, `play`, `playv`, `spotify`, `yta`, `yts`, `ytv` |
 | Werkzeuge | `google`, `reddit`, `shorturl`, `steal`, `sticker`, `toimg`, `weather` |
 | Reaktionen und Bild-Effekte | `reaction` (z. B. `hug`, `pat`, `slap`), `hitler`, `old`, `rainbow`, `rip`, `shit`, `trash`, `trigger`, `wanted`, `wasted` |
