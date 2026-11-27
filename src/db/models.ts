@@ -28,6 +28,30 @@ const settingSchema = new Schema({
 })
 export const Setting = model('Setting', settingSchema)
 
+/** Daily SimbaKI request totals only; conversation text is never persisted. */
+const aiUsageSchema = new Schema({
+	userId: { type: String, required: true },
+	day: { type: String, required: true },
+	count: { type: Number, default: 0 },
+	createdAt: { type: Date, default: () => new Date() }
+})
+aiUsageSchema.index({ userId: 1, day: 1 }, { unique: true })
+// Keep aggregate quota records for 90 days, then let MongoDB remove them automatically.
+aiUsageSchema.index({ createdAt: 1 }, { expireAfterSeconds: 90 * 24 * 60 * 60 })
+export const AiUsage = model('SimbaKIUsage', aiUsageSchema)
+
+/** Birthday dates only; no birth year or age is stored. */
+const birthdaySchema = new Schema({
+	groupId: { type: String, required: true },
+	userId: { type: String, required: true },
+	name: { type: String, required: true },
+	day: { type: Number, required: true, min: 1, max: 31 },
+	month: { type: Number, required: true, min: 1, max: 12 }
+})
+birthdaySchema.index({ groupId: 1, userId: 1 }, { unique: true })
+birthdaySchema.index({ groupId: 1, month: 1, day: 1 })
+export const Birthday = model('Birthday', birthdaySchema)
+
 /** The session collection used by the old v6 auth store, read once for migration. */
 const legacySessionSchema = new Schema({
 	sessionId: { type: String, required: true, unique: true },

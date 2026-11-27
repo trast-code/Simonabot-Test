@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - test/ci-checks
+      - feature/simonabot-customization
   pull_request:
     branches:
       - main
+      - test/ci-checks
   workflow_dispatch:
 
 permissions:

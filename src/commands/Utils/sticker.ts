@@ -20,7 +20,7 @@ export default defineCommand({
 				: flags.some(f => /--s(tretch(ed)?)?$/.test(f))
 					? 'stretch'
 					: 'full'
-		const [pack = 'ETERNITY', author = m.pushName || ''] = args
+		const [pack = 'SimonaBot', author = m.pushName || ''] = args
 			.filter(a => !a.startsWith('--'))
 			.join(' ')
 			.split('|')

@@ -8,11 +8,12 @@ import { sentByBot } from '../core/socket.js'
 import { levels } from '../db/levels.js'
 import { User } from '../db/models.js'
 import { settings } from '../db/settings.js'
+import { handleIntroductionReply } from '../core/introduction.js'
 import { errorMessage, userPart } from '../lib/utils.js'
 import type { Client, CommandContext, Message } from '../types.js'
 
 const INVALID_COMMAND_IMAGE = 'https://i.ibb.co/c33ZHCx/wallpaperflare-com-wallpaper.jpg'
-const INVITE_LINK = /(chat\.whatsapp\.com\/|api\.whatsapp\.com\/|wa\.me\/[^\s]*\?text)/i
+const INVITE_LINK = /(?:https?:\/\/)?chat\.whatsapp\.com\/[A-Za-z0-9]+/i
 
 /** sender -> command name -> last use */
 const cooldowns = new Map<string, Map<string, number>>()
@@ -32,9 +33,14 @@ const rememberName = (m: Message) => {
 	User.updateOne({ id }, { $set: { name: m.pushName } }, { upsert: true }).catch(() => {})
 }
 
+/** Try both moderation actions independently so a delete failure cannot prevent the kick. */
 const deleteAndKick = async (client: Client, m: Message) => {
-	await client.sendMessage(m.from, { delete: m.key })
-	await client.groupParticipantsUpdate(m.from, [m.sender], 'remove')
+	const [deleted, removed] = await Promise.allSettled([
+		client.sendMessage(m.from, { delete: m.key }),
+		client.groupParticipantsUpdate(m.from, [m.sender], 'remove')
+	])
+	if (deleted.status === 'rejected') console.error('[antilink] Could not delete invite message:', deleted.reason)
+	if (removed.status === 'rejected') console.error('[antilink] Could not remove invite-link sender:', removed.reason)
 }
 
 export const createMessageHandler = (commands: CommandRegistry) => async (client: Client, raws: WAMessage[]) => {
@@ -75,20 +81,23 @@ const handle = async (client: Client, m: Message, commands: CommandRegistry) => 
 		isBotAdmin = isAdminParticipant(findParticipant(participants, [client.user?.id, client.user?.lid]))
 	}
 
-	// Anti-link: remove members who post WhatsApp invite links in protected groups.
+	// Only WhatsApp group invite links are moderated. Group admins and the configured bot owner are exempt.
 	if (m.isGroup && antilink && !m.fromMe && INVITE_LINK.test(body)) {
 		if (owner) return void m.reply('*Ohhh you are a mod*')
 		if (isAdmin) return void m.reply('*Ohhh you are an admin*')
-		if (isBotAdmin) return void (await deleteAndKick(client, m).catch(() => {}))
+		if (isBotAdmin) return void deleteAndKick(client, m)
 	}
 
-	if (!body.startsWith(prefix)) return
+	if (!body.startsWith(prefix)) {
+		if (m.isGroup) await handleIntroductionReply(client, m, prefix)
+		return
+	}
 	const [rawName = '', ...args] = body.slice(prefix.length).trim().split(/\s+/)
 	const name = rawName.toLowerCase()
 	if (!name) return
 	const cmd = commands.get(name)
 	const text = args.join(' ')
-	log(m, body, metadata?.subject ?? '')
+	log(m, ['ki', 'simba', 'simbaki'].includes(name) ? `${prefix}${name} [KI-Inhalt ausgeblendet]` : body, metadata?.subject ?? '')
 
 	if (!cmd) {
 		return void m.reply({

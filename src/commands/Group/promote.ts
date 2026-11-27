@@ -1,3 +1,4 @@
+import { findParticipant, isAdminParticipant, isOwner, isSameUser, participantIds } from '../../core/identity.js'
 import { targetUser } from '../../lib/targets.js'
 import { defineCommand } from '../../types.js'
 
@@ -12,9 +13,15 @@ export default defineCommand({
 	adminOnly: true,
 	botAdmin: true,
 	start: async (client, m, ctx) => {
-		const user = targetUser(m, ctx)
-		if (!user) return m.reply("❌ Couldn't find any user in context")
-		await client.groupParticipantsUpdate(m.from, [user], 'promote')
-		await m.reply(`Successfully promoted ${await client.getName(user)}`)
+		const requestedUser = targetUser(m, ctx)
+		if (!requestedUser) return m.reply("❌ Couldn't find any user in context")
+		const participant = findParticipant(ctx.participants, [requestedUser])
+		if (!participant) return m.reply('❌ This user is not a member of this group')
+		const ids = participantIds(participant)
+		if (isSameUser(ids, [client.user?.id, client.user?.lid])) return m.reply('❌ I cannot change my own admin status')
+		if (isOwner(ids)) return m.reply('❌ The configured bot owner is protected')
+		if (isAdminParticipant(participant)) return m.reply('ℹ️ This member is already an admin')
+		await client.groupParticipantsUpdate(m.from, [participant.id], 'promote')
+		await m.reply(`✅ ${await client.getName(participant.id)} is now an admin`)
 	}
 })

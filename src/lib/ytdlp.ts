@@ -10,6 +10,9 @@ import { tempFile } from './ffmpeg.js'
  * yt-dlp needs a JavaScript runtime for YouTube; we hand it the Bun/Node running the bot.
  */
 
+const MAX_CAPTURED_OUTPUT = 64 * 1024
+const appendTail = (current: string, chunk: string) => (current + chunk).slice(-MAX_CAPTURED_OUTPUT)
+
 const bin = () => process.env.YTDLP_PATH || 'yt-dlp'
 
 const jsRuntime = () => {
@@ -62,16 +65,16 @@ const run = (args: string[], timeoutMs = 180_000, log = false, onProgress?: OnPr
 		proc.stdout.on('data', d => {
 			// Split out progress lines; everything else is the --print output we return.
 			const lines = (pending + d.toString()).split('\n')
-			pending = lines.pop() ?? ''
+			pending = (lines.pop() ?? '').slice(-MAX_CAPTURED_OUTPUT)
 			for (const line of lines) {
 				const progress = parseProgress(line)
-				if (!progress) stdout += line + '\n'
+				if (!progress) stdout = appendTail(stdout, line + '\n')
 				else if (onProgress) onProgress(progress)
 			}
 		})
 		proc.stderr.on('data', d => {
 			const text = d.toString()
-			stderr += text
+			stderr = appendTail(stderr, text)
 			// Show what yt-dlp is doing, so a slow download doesn't look like a hang.
 			for (const line of text.split('\n')) {
 				if (!line.trim()) continue
@@ -86,7 +89,7 @@ const run = (args: string[], timeoutMs = 180_000, log = false, onProgress?: OnPr
 		})
 		proc.on('close', code => {
 			clearTimeout(timer)
-			if (pending && !parseProgress(pending)) stdout += pending
+			if (pending && !parseProgress(pending)) stdout = appendTail(stdout, pending)
 			if (code === 0) return resolve(stdout)
 			if (timedOut) return reject(new Error(`yt-dlp timed out after ${timeoutMs / 1000}s (YouTube kept refusing or was too slow)`))
 			const lines = stderr.split('\n').filter(Boolean)

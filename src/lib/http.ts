@@ -28,7 +28,8 @@ export const fetchBuffer = async (url: string, init?: RequestInit, maxBytes = 10
 	const res = await request(url, init, 120_000)
 	const length = Number(res.headers.get('content-length') ?? 0)
 	if (length > maxBytes) throw new Error(`File is too large (${(length / 1024 / 1024).toFixed(1)} MB)`)
-	return Buffer.from(await res.arrayBuffer())
+	if (!res.body) throw new Error('Response has no body')
+	return streamToBuffer(res.body, maxBytes)
 }
 
 /** Read a web ReadableStream into a Buffer, failing once it passes `maxBytes`. */

@@ -1,7 +1,7 @@
 <div align="center">
 <a href="https://www.youtube.com/watch?v=KqgyScOlvV8"><img src="https://i.ibb.co/Mfkw6xT/eternity-5.png" alt="Nezuko" border="0" /></a>
 
-# **NEZUKO : MULTI DEVICE WHATSAPP BOT WITH COOL FEATURES**
+# **SIMONABOT · WHATSAPP-GRUPPENBOT**
 
 <p align="center">
 <a href="https://github.com/pratyush4932"><img title="Author" src="https://img.shields.io/badge/Author-Pratyush-red.svg?style=for-the-badge&logo=github"></a>
@@ -18,9 +18,9 @@
 
 ## 📚 Information
 
-> A simple and easy-to-use WhatsApp bot with cool features, based on Multi-Device [Baileys](https://github.com/WhiskeySockets/Baileys) and written in **TypeScript**. Runs on **Bun** (recommended) or **Node.js 20+**.
+> SimonaBot ist ein anpassbarer WhatsApp-Gruppenbot auf Basis von Nezuko, Multi-Device [Baileys](https://github.com/WhiskeySockets/Baileys) und **TypeScript**. Er läuft mit **Bun** oder **Node.js 20+**.
 
-## 💖 NEZUKO
+## 💖 Ursprung und Lizenz
 
 > This is an open source project by TEAM ETERNITY. If you fork it and change code, don't claim it as yours: give credit to the original developers. If you have any questions, join our support group to report your issues.
 
@@ -35,7 +35,7 @@
 - **Safer session storage.** The WhatsApp session is saved key-by-key in MongoDB with all the key types Baileys 7 needs. **Old sessions are imported automatically**, so you don't have to re-scan after upgrading.
 - **Pairing code login** as an alternative to the QR code.
 - **Fewer, lighter dependencies.** quick.db/SQLite, discord-xp, fluent-ffmpeg, jimp, cheerio and several scrapers were replaced with small built-in code. Existing XP is kept: same collection, same formula.
-- **Fixes:** broadcast now sends plain text messages too, anti-link no longer tries to kick when the bot isn't admin, cooldowns are per command, and the default "MODS" fallback (which gave strangers owner access) was removed.
+- **Fixes:** anti-link no longer tries to kick when the bot isn't admin, cooldowns are per command, and the default "MODS" fallback (which gave strangers owner access) was removed.
 
 ## 🧰 Requirements
 
@@ -86,7 +86,7 @@ All settings are environment variables (see [`.env.example`](.env.example)).
 | --- | --- | --- |
 | `MONGODB` | ✅ | MongoDB connection string |
 | `MODS` | ✅ | Owner numbers with country code, comma separated (e.g. `919876543210,447700900123`) |
-| `PREFIX` | | Command prefix (default `.`) |
+| `PREFIX` | | Command prefix (default `!`) |
 | `SESSION_ID` | ✅ | Unique random secret of at least 32 characters. Also the password for `/qr` (HTTP Basic Auth, username `qr`). Generate with `openssl rand -hex 32`. No default is provided. |
 | `PAIRING_NUMBER` | | Link with a pairing code instead of a QR code |
 | `PORT` | | Web server port (default `8080`) |\n| `TRUST_PROXY_HOPS` | | Exact number of trusted reverse-proxy hops (default `0`; configure only behind a trusted proxy) |\n| `QR_REQUIRE_HTTPS` | | Require HTTPS for `/qr` (default `true`; do not disable in production) |
@@ -122,35 +122,37 @@ Run `bun run yt-check <youtube link>` on the machine where the bot runs. It show
 - **Everything fails:** run `bun update youtubei.js` (YouTube changes often and fixes ship quickly), or try a different network. Cloud server IPs are often blocked.
 - `web` always shows "SABR only"; that's expected, YouTube no longer gives it direct download links.
 
-## ☁️ Deploy
+## ☁️ Hosting
 
-The included `Dockerfile` (Bun + ffmpeg) works on any container host.
+Das Dockerfile kann auf einer geeigneten Container-Plattform verwendet werden. Für SimonaBot ist derzeit noch kein Hosting eingerichtet. Vor einem späteren Start müssen mindestens MongoDB, ein eigener zufälliger `SESSION_ID`-Schlüssel und die Owner-Nummern sicher konfiguriert werden.
 
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template/xhqo2N?referralCode=QaaU0X)
-[![Deploy to Koyeb](https://www.koyeb.com/static/images/deploy/button.svg)](https://app.koyeb.com/deploy?type=git&repository=github.com/EternityBots/Nezuko&branch=main&builder=dockerfile&name=nezuko&env[PORT]=8000&env[PREFIX]=.&env[SESSION_ID]=NEZUKO&env[MONGODB]&env[MODS])
-[![Run on Repl.it](https://replit.com/badge/github/EternityBots/Nezuko)](https://replit.com/new/github/EternityBots/Nezuko)
-[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/EternityBots/Nezuko)
+**Wichtig:** Keine Beispiel- oder Standard-Zugangsdaten verwenden. Pro WhatsApp-Sitzung darf nur eine Bot-Instanz gleichzeitig laufen. Das Verknüpfen eines echten WhatsApp-Kontos und ein Deployment erfolgen erst nach ausdrücklicher Freigabe.
 
-Run **one** instance per session. Two copies using the same `SESSION_ID` keep kicking each other off (WhatsApp error 440).
+## 📜 Befehle
 
-## 📜 Commands
+Standard-Präfix ist `!`. Mit `!help` wird das vollständige, automatisch erzeugte Befehlsmenü angezeigt. Details zu einem Befehl gibt es mit `!help <befehl>`.
 
-Default prefix is `.`. Use `.help <command>` or `.<command> --info` for details.
-
-| Category | Commands |
+| Bereich | Befehle |
 | --- | --- |
-| General | `help`, `hi`, `mods`, `profile`, `rank`, `repo` |
-| Group | `delete`, `demote`, `disable`, `enable`, `group`, `groupinfo`, `ping`/`tagall`, `promote`, `remove`, `setppgc`, `support` |
-| Mods | `ban`, `broadcast`, `eval`, `join`, `leave`, `unban` |
-| Media | `igdl`, `lyrics`, `play`, `playv`, `spotify`, `yta`, `yts`, `ytv` |
-| Utils | `google`, `reddit`, `shorturl`, `steal`, `sticker`, `toimg`, `weather` |
-| Fun | `hitler`, `old`, `rainbow`, `reaction` (+ `pat`, `hug`, `slap`…), `rip`, `shit`, `slap`, `trash`, `trigger`, `wanted`, `wasted` |
-| Weeb | `anime`, `cosplay`, `couplepp`, `genshin`, `manga`, `neko`, `waifu`, `wallpaper` |
-| Education | `calc`, `define`, `element` |
+| Allgemein | `help`, `hi`, `mods`, `profile`, `rank`, `repo`, `ki`, `geburtstag`, `geburtstage`, `vorstellen`, `statistik` |
+| Gruppe | `delete`, `demote`, `disable`, `enable`, `group`, `groupinfo`, `ping`, `promote`, `remove`, `setppgc`, `support` |
+| Moderation | `ban`, `join`, `leave`, `unban` |
+| Medien | `igdl`, `lyrics`, `play`, `playv`, `spotify`, `yta`, `yts`, `ytv` |
+| Werkzeuge | `google`, `reddit`, `shorturl`, `steal`, `sticker`, `toimg`, `weather` |
+| Reaktionen und Bild-Effekte | `reaction` (z. B. `hug`, `pat`, `slap`), `hitler`, `old`, `rainbow`, `rip`, `shit`, `trash`, `trigger`, `wanted`, `wasted` |
+| Anime und Manga | `anime`, `cosplay`, `couplepp`, `genshin`, `manga`, `neko`, `waifu`, `wallpaper` |
+| Wissen | `calc`, `define`, `element` |
 
-Group features are switched on per group by admins: `.enable antilink`, `.enable events` (welcome/goodbye), `.enable nsfw` (allows NSFW subreddits in `reddit`).
+### SimonaBot-Funktionen
 
-## 🧩 Adding a command
+- **Anti-Link:** Entfernt ausschließlich WhatsApp-Gruppeneinladungslinks (`chat.whatsapp.com`). Andere Links werden nicht als Einladungslinks behandelt.
+- **SimbaKI:** `!ki <nachricht>` (auch `!simba` oder `!simbaki`). Maximal 10 Anfragen pro Mitglied und Kalendertag in deutscher Zeit. Der Gesprächsverlauf liegt nur vorübergehend im Arbeitsspeicher, wird nach 30 Minuten Inaktivität gelöscht und geht bei einem Neustart verloren. `!ki reset` löscht ihn sofort.
+- **Geburtstag:** `!geburtstag TT.MM` trägt den eigenen Geburtstag ein oder ändert ihn. `!geburtstag löschen` entfernt den eigenen Eintrag. `!geburtstage` zeigt nur die Geburtstage des aktuellen Monats in der jeweiligen Gruppe. Geburtstage werden getrennt pro Gruppe gespeichert.
+- **Vorstellen:** `!vorstellen` startet eine kurze Abfrage. Nach Abschluss wird die Vorstellung in der Gruppe veröffentlicht. Mit `abbrechen` kann der Vorgang beendet werden; unvollständige Eingaben verfallen nach zehn Minuten.
+- **Statistik:** `!statistik` zeigt Gruppenmitglieder und Geburtstage des Monats. Admins und Owner sehen zusätzlich aggregierte, botweite SimbaKI-Tageszahlen sowie die Gesamtzahl der in dieser Gruppe eingetragenen Geburtstage.
+- **Gruppenverwaltung:** Admin-Befehle wie `!promote`, `!demote`, `!remove`, `!group open` und `!group close` setzen die entsprechenden WhatsApp-Rechte voraus.
+
+Gruppenfunktionen wie Anti-Link und Begrüßungs-/Abschiedsnachrichten werden von Gruppenadmins mit `!enable` bzw. `!disable` verwaltet.\n\n## 🧩 Adding a command
 
 Create a file in `src/commands/<Category>/`. It is picked up automatically on start:
 
@@ -229,3 +231,12 @@ Nezuko is free and open-source software licensed under the [GNU Affero General P
 | <a href="https://github.com/Chey-san"><img src="https://github.com/Chey-san.png?size=100" width="100" height="100"></a>         | [![SaruMan_sama](https://github.com/SarumanSama.png?size=100)](https://github.com/SarumanSama) |
 | [Chey_San](https://github.com/Chey-san)                                                                                         | [SaruMan](https://github.com/SarumanSama)                                                      |
 | Contributor                                                                                                                     | Contributor                                                                                    |
+
+
+## SimbaKI
+
+SimonaBot includes the group command `!ki <message>` (aliases: `!simba`, `!simbaki`). Each member has a limit of 10 requests per German calendar day (Europe/Berlin). The count is stored in MongoDB; conversation text is not stored there.
+
+The short conversation context is held only in process memory, separately for each member in each group. It expires after 30 minutes without activity and is lost when the bot restarts. Use `!ki reset` to clear it immediately.
+
+To enable SimbaKI, configure `AI_API_KEY`. The default endpoint is OpenAI-compatible and uses `gpt-4o-mini`; `AI_BASE_URL` and `AI_MODEL` can be changed for another compatible provider. Messages and the recent in-session context are sent to that provider to generate replies. Do not send sensitive personal information unless the provider's data terms are acceptable to the group.

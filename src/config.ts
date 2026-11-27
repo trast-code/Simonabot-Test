@@ -22,32 +22,28 @@ const owners = (env('MODS') ?? '')
 export const config = {
 	owners,
 	mongodb: env('MONGODB'),
-	prefix: env('PREFIX') ?? '.',
-	// No public default: startup validation requires a unique random value.
+	prefix: env('PREFIX') ?? '!',
 	sessionId: env('SESSION_ID') ?? '',
 	port: int('PORT', 8080),
-	// Set to the exact number of trusted reverse-proxy hops; leave 0 when directly exposed.
 	trustProxyHops: int('TRUST_PROXY_HOPS', 0),
-	// QR access requires HTTPS by default. Only disable for isolated local development/tests.
 	qrRequireHttps: env('QR_REQUIRE_HTTPS') !== 'false',
 	logLevel: env('LOG_LEVEL') ?? 'silent',
 
-	/** If set, link with an 8-digit pairing code instead of a QR code. */
-	pairingNumber: env('PAIRING_NUMBER')?.replace(/[^0-9]/g, ''),
+	/** OpenAI-compatible chat-completions API used by SimbaKI. */
+	aiApiKey: env('AI_API_KEY'),
+	aiBaseUrl: env('AI_BASE_URL') ?? 'https://api.openai.com/v1',
+	aiModel: env('AI_MODEL') ?? 'gpt-4o-mini',
 
+	pairingNumber: env('PAIRING_NUMBER')?.replace(/[^0-9]/g, ''),
 	googleApiKey: env('GOOGLE_API'),
 	googleCx: env('GOOGLE_CX') ?? 'baf9bdb0c631236e5',
 	weatherApiKey: env('WEATHER_API'),
 	spotifyClientId: env('SPOTIFY_CLIENT_ID'),
 	spotifyClientSecret: env('SPOTIFY_CLIENT_SECRET'),
 
-	/** Optional YouTube cookie string for signed-in requests (use a throwaway account). */
 	youtubeCookie: env('YT_COOKIE'),
-	/** Optional Proof-of-Origin token for YouTube streaming. */
 	youtubePoToken: env('YT_PO_TOKEN'),
-	/** Generate PO tokens automatically with BotGuard (on unless YT_AUTO_PO_TOKEN=false or YT_COOKIE is set). */
 	youtubeAutoPoToken: env('YT_AUTO_PO_TOKEN') !== 'false' && !env('YT_COOKIE') && !env('YT_PO_TOKEN'),
-	/** auto: yt-dlp if installed, then youtubei.js | youtubei: never use yt-dlp | yt-dlp: always use yt-dlp */
 	youtubeDownloader: (['auto', 'youtubei', 'yt-dlp'].includes(env('YT_DOWNLOADER') ?? '') ? env('YT_DOWNLOADER') : 'auto') as
 		| 'auto'
 		| 'youtubei'

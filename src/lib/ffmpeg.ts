@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 const TMP = join(tmpdir(), 'nezuko')
+const MAX_CAPTURED_STDERR = 64 * 1024
 
 export const tempFile = async (ext: string) => {
 	await mkdir(TMP, { recursive: true })
@@ -17,7 +18,7 @@ export const runFfmpeg = (args: string[], timeoutMs = 180_000) =>
 		const proc = spawn('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', ...args], { stdio: ['ignore', 'ignore', 'pipe'] })
 		let stderr = ''
 		const timer = setTimeout(() => proc.kill('SIGKILL'), timeoutMs)
-		proc.stderr.on('data', d => (stderr += d.toString()))
+		proc.stderr.on('data', d => (stderr = (stderr + d.toString()).slice(-MAX_CAPTURED_STDERR)))
 		proc.on('error', err => {
 			clearTimeout(timer)
 			reject(err.message.includes('ENOENT') ? new Error('ffmpeg is not installed on this server') : err)
