@@ -12,11 +12,24 @@ export default defineCommand({
 	start: async (client, m, { args, prefix }) => {
 		const url = args[0]
 		if (!url) return m.reply(`❌ URL is empty!\nSend ${prefix}igdl <url>`)
-		if (!/instagram\.com\/(p|reel|reels|tv)\//.test(url)) {
+		let parsed: URL
+		try {
+			parsed = new URL(url)
+		} catch {
 			return m.reply('❌ Wrong URL! Only Instagram posts, reels and TV videos can be downloaded.')
 		}
+		if (
+			!['instagram.com', 'www.instagram.com'].includes(parsed.hostname.toLowerCase()) ||
+			parsed.username ||
+			parsed.password ||
+			!/^\/(p|reel|reels|tv)\//.test(parsed.pathname)
+		) {
+			return m.reply('❌ Wrong URL! Only Instagram posts, reels and TV videos can be downloaded.')
+		}
+		parsed.search = ''
+		parsed.hash = ''
 
-		const result = await instagramGetUrl(url.split('?')[0]).catch(() => null)
+		const result = await instagramGetUrl(parsed.toString()).catch(() => null)
 		const media = result?.media_details ?? []
 		if (!media.length) return m.reply('Error: the post is private or was not found')
 
