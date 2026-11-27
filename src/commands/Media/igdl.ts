@@ -19,6 +19,7 @@ export default defineCommand({
 			return m.reply('❌ Wrong URL! Only Instagram posts, reels and TV videos can be downloaded.')
 		}
 		if (
+			parsed.protocol !== 'https:' ||
 			!['instagram.com', 'www.instagram.com'].includes(parsed.hostname.toLowerCase()) ||
 			parsed.username ||
 			parsed.password ||
