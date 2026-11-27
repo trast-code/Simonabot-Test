@@ -19,15 +19,8 @@ Log.setLevel(config.logLevel === 'debug' ? Log.Level.DEBUG : Log.Level.ERROR)
  * youtubei.js needs a JavaScript evaluator to decipher stream URLs.
  * The extracted player code is run in a separate VM context rather than the bot's own scope.
  */
-Platform.shim.eval = async (data: Types.BuildScriptResult) => {
-	try {
-		return vm.runInNewContext(`(function () {\n${data.output}\n})()`, {}, { timeout: 5_000 })
-	} catch (err) {
-		if (err instanceof Error && /timed out/i.test(err.message)) throw err
-		// Some runtimes lack full node:vm support; fall back to an isolated function scope.
-		return new Function(data.output)()
-	}
-}
+Platform.shim.eval = async (data: Types.BuildScriptResult) =>
+	vm.runInNewContext(`(function () {\n${data.output}\n})()`, {}, { timeout: 5_000 })
 
 let instance: Promise<Innertube> | null = null
 
