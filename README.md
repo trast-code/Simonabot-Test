@@ -35,7 +35,7 @@
 - **Safer session storage.** The WhatsApp session is saved key-by-key in MongoDB with all the key types Baileys 7 needs. **Old sessions are imported automatically**, so you don't have to re-scan after upgrading.
 - **Pairing code login** as an alternative to the QR code.
 - **Fewer, lighter dependencies.** quick.db/SQLite, discord-xp, fluent-ffmpeg, jimp, cheerio and several scrapers were replaced with small built-in code. Existing XP is kept: same collection, same formula.
-- **Fixes:** broadcast now sends plain text messages too, anti-link no longer tries to kick when the bot isn't admin, cooldowns are per command, and the default "MODS" fallback (which gave strangers owner access) was removed.
+- **Fixes:** anti-link no longer tries to kick when the bot isn't admin, cooldowns are per command, and the default "MODS" fallback (which gave strangers owner access) was removed.
 
 ## 🧰 Requirements
 
