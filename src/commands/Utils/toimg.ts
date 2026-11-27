@@ -13,7 +13,7 @@ export default defineCommand({
 		if (!m.quoted || !/webp/.test(m.quoted.mimetype)) return m.reply("❌ Couldn't find any sticker in context")
 		const sticker = await m.quoted.download()
 		if (await isAnimatedWebp(sticker)) {
-			await m.reply({ video: await webpToMp4(sticker), gifPlayback: true, caption: 'ETERNITY' })
+			await m.reply({ video: await webpToMp4(sticker), gifPlayback: true, caption: 'SimonaBot' })
 		} else {
 			await m.reply({ image: await webpToPng(sticker), caption: 'ETERNITY' })
 		}
