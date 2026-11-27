@@ -27,30 +27,40 @@ const BANNERS = [
 	'https://images2.alphacoders.com/125/1254189.jpg'
 ]
 
+const access = (cmd: { ownerOnly?: boolean; adminOnly?: boolean; groupOnly?: boolean; botAdmin?: boolean }) => {
+	const rules = []
+	if (cmd.ownerOnly) rules.push('Nur Bot-Owner')
+	else if (cmd.adminOnly) rules.push('Nur Gruppenadmins und Bot-Owner')
+	if (cmd.groupOnly) rules.push('Nur in Gruppen')
+	if (cmd.botAdmin) rules.push('Bot muss Gruppenadmin sein')
+	return rules.length ? rules.join(' · ') : 'Für alle verfügbar'
+}
+
 export default defineCommand({
 	name: 'help',
 	alias: ['h', 'menu'],
-	desc: 'Lists all commands, or shows details of one',
-	usage: '%prefix%command [command]',
+	desc: 'Zeigt alle Befehle oder Details zu einem Befehl',
+	usage: '%prefix%command [Befehl]',
 	category: 'General',
 	react: '✅',
 	start: async (client, m, { commands, args, prefix }) => {
 		if (args[0]) {
 			const cmd = commands.get(args[0])
-			if (!cmd || cmd.hidden) return m.reply('No command found')
-			const info = [`*🍁 Command :* ${capitalize(cmd.name)}`]
-			if (cmd.alias?.length) info.push(`*👾 Alias :* ${cmd.alias.join(', ')}`)
-			if (cmd.cool) info.push(`*⏱️ Cooldown :* ${cmd.cool}s`)
-			if (cmd.desc) info.push(`*🧾 Description :* ${cmd.desc}`)
-			if (cmd.usage) info.push(`*💡 Example :* ${cmd.usage.replace(/%prefix/gi, prefix).replace(/%command/gi, cmd.name)}`)
-			return m.reply(`*ℹ️ Command Info*\n\n${info.join('\n')}\n\n*SimonaBot · basiert auf Nezuko*`)
+			if (!cmd || cmd.hidden) return m.reply('Diesen Befehl gibt es nicht.')
+			const info = [`*🍁 Befehl:* ${capitalize(cmd.name)}`]
+			if (cmd.alias?.length) info.push(`*👾 Alias:* ${cmd.alias.join(', ')}`)
+			if (cmd.cool) info.push(`*⏱️ Abklingzeit:* ${cmd.cool} Sekunden`)
+			if (cmd.desc) info.push(`*🧾 Beschreibung:* ${cmd.desc}`)
+			if (cmd.usage) info.push(`*💡 Verwendung:* ${cmd.usage.replace(/%prefix/gi, prefix).replace(/%command/gi, cmd.name)}`)
+			info.push(`*🔐 Zugriff:* ${access(cmd)}`)
+			return m.reply(`*ℹ️ Befehlsinfo*\n\n${info.join('\n')}\n\n*SimonaBot · basiert auf Nezuko*`)
 		}
 
-		let text = `Hey ${m.pushName || 'du'}! Ich bin *SimonaBot*.\n\n🧧 *Prefix:* [ ${prefix} ]\n\n📝 *Meine Befehle:*\n\n`
+		let text = `Hallo ${m.pushName || 'du'}! Ich bin *SimonaBot*.\n\n🧧 *Präfix:* [ ${prefix} ]\n\n📝 *Meine Befehle:*\n\n`
 		for (const [category, list] of commands.byCategory()) {
-			text += `*${category.toUpperCase()} ${EMOJI[category] ?? '✨'} :-*\n\`\`\`${list.map(c => c.name).join(', ')}\`\`\`\n\n`
+			text += `*${category.toUpperCase()} ${EMOJI[category] ?? '✨'}:*\n${list.map(c => c.name).join(', ')}\n\n`
 		}
-		text += `📗 Nutze *${prefix}help* <Befehl> oder <Befehl> --info\n\n*SimonaBot · basiert auf Nezuko*`
+		text += `📗 Nutze *${prefix}help <Befehl>*, um Beschreibung und Zugriffsrechte zu sehen.\n\n*SimonaBot · basiert auf Nezuko*`
 		await m.reply({ image: { url: pickRandom(BANNERS) }, caption: text })
 	}
 })
